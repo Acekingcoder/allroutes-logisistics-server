@@ -1,0 +1,34 @@
+.DS_Store
+.env*
+
+.env
+
+# Ignore node_modules directory
+node_modules/
+
+# Ignore any built TypeScript files
+*.js
+*.js.map
+
+# Ignore any built JavaScript files
+*.tsbuildinfo
+
+# Ignore environment-specific files
+.env
+
+# Ignore any logs or temporary files
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Ignore Visual Studio Code configuration files
+.vscode/
+
+# Ignore macOS file system files
+.DS_Store
+
+# Ignore npm package lock files
+package-lock.json
+yarn.lock
