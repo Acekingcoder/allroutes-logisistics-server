@@ -30,3 +30,11 @@ We welcome contributions from the community to help improve EnRoute. If you have
 ## License
 
 This project is owned by Aceking Global.
+
+
+## STARTING THE APP
+1. Clone the repo(git@github.com:Acekingcoder/allroutes-logisistics-server.git) or git pull (Ensure you resolve conflicts properly if you are using git pull)
+2. npm install
+3. Ensure you have connected your mongodb using the connection string via the MongoDB extension on your VSCODE.
+4. npm run dev (app runs in development mode) ** recommended **
+5. npm run prod (app runs in production mode)
