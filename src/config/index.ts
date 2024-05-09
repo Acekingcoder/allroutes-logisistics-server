@@ -13,7 +13,7 @@ console.log(`${stage} mode`.toUpperCase());
 let config;
 
 if (stage === "production") {
-  config = require("./prod").default;
+    config = require("./prod").default;
 } else if (stage === "development") {
   config = require("./dev").default;
 } else {
