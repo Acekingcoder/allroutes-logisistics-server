@@ -2,7 +2,7 @@ import express from "express";
 import helmet from "helmet";
 import cors from "cors";
 import morgan from "morgan";
-import config from "../config";
+import config from "../config/index";
 
 interface LoaderOptions {
   app: Express;
@@ -21,6 +21,7 @@ export default async function ({ app }: { app: Express }) {
       contentSecurityPolicy: false,
     })
   );
+  
   app.use(cors());
   app.use(express.json());
   app.use(express.urlencoded({ extended: false }));

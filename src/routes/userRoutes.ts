@@ -17,4 +17,5 @@ router.get("/users", getAllUsers);
 router.get("/users/:id", getUser);
 router.delete("/users/:id", deleteUser);
 router.put("/users/:id", createUserValidationRules(), validate, updateUser);
+
 export default router;

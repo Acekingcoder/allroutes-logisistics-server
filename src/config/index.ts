@@ -1,17 +1,28 @@
+import merge from "lodash.merge";
 import dotenv from "dotenv";
+dotenv.config();
 
-process.env.NODE_ENV = process.env.NODE_ENV || "development";
-
-const envFound = dotenv.config();
-
-if (envFound.error) {
+if (dotenv.config().error) {
   throw new Error("Couldn't find .env file");
 }
 
-export default {
-  port: parseInt(process.env.PORT, 10),
-  logs: {
-    morgan: process.env.MORGAN,
+const stage: string = process.env.NODE_ENV!;
+
+console.log(`${stage} mode`.toUpperCase());
+
+let config;
+
+if (stage === "production") {
+  config = require("./prod").default;
+} else if (stage === "development") {
+  config = require("./dev").default;
+} else {
+  config = null;
+}
+
+export default merge(
+  {
+    stage,
   },
-  mongoURI: process.env.MONGO_URI,
-};
+  config
+);

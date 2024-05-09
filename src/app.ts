@@ -1,19 +1,22 @@
 import express from "express";
-import config from "./config";
+import config from "./config/index";
 import userRoutes from "./routes/userRoutes";
+import databaseConnection from "./loaders/mongodbLoader";
+import loadingExpressApp from "./loaders/indexLoader";
 
 async function startServer() {
   const app = express();
 
-  (await import("./loaders/mongodbLoader")).default({ app });
+  const { port } = config;
 
-  (await import("./loaders/expressLoader")).default({ app });
+  await databaseConnection({});
+  await loadingExpressApp({ app });
 
   app.use("/api", userRoutes);
 
   app
-    .listen(config.port, () =>
-      console.log(`Allroutes Logistics server running on port ${config.port}`)
+    .listen(port, () =>
+      console.log(`Allroutes Logistics server running on port ${port}`)
     )
     .on("error", (error) => {
       console.log(error.message);
