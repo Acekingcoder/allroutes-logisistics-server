@@ -1,5 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const { JWT_SECRET } = process.env
 
 export const authenticateUser = (
   req: Request,
@@ -12,7 +17,7 @@ export const authenticateUser = (
     return res.status(401).json({ error: "Unauthorized: No token provided" });
   }
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, JWT_SECRET!);
     req.user = decoded;
     next();
   } catch (error) {
