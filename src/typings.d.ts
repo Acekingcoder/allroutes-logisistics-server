@@ -4,7 +4,7 @@ declare namespace Express {
   }
 }
 
-interface ItemDocument extends Document {
+interface orderDocument extends Document {
   name: string;
   description: string;
   weight: number;

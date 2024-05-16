@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { itemStatus } from "../utils/constants";
 
-const itemSchema = new Schema<ItemDocument>(
+const orderSchema = new Schema<orderDocument>(
   {
     name: {
       type: String,
@@ -93,6 +93,9 @@ const itemSchema = new Schema<ItemDocument>(
       type: Schema.Types.ObjectId,
       ref: "Rider",
     },
+
+    // the name and number of the person who will receive the order so that the rider can contact them.
+    // The user will provide this info when creating the order
     recipient: {
       name: {
         type: String,
@@ -109,4 +112,5 @@ const itemSchema = new Schema<ItemDocument>(
   }
 );
 
-const itemModel = mongoose.model<ItemDocument>("Item", itemSchema);
+const orderModel = mongoose.model<orderDocument>("Order", orderSchema);
+export default orderModel;
