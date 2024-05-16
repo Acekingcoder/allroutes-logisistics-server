@@ -16,13 +16,14 @@ export const createUser = async (req: Request, res: Response) => {
       email,
       password: hashedPassword,
     });
+
     res.status(201).json({
       status: "success",
       data: {
         newUser,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res
       .status(500)
       .json({ message: "Failed to create user", error: error.message });
@@ -44,7 +45,7 @@ export const deleteUser = async (req: Request, res: Response) => {
         deleteUser,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res
       .status(500)
       .json({ message: "Failed to delete user", error: error.message });
@@ -76,7 +77,7 @@ export const updateUser = async (req: Request, res: Response) => {
         updateUser,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res
       .status(500)
       .json({ message: "Failed to update user", error: error.message });
@@ -95,7 +96,7 @@ export const getUser = async (req: Request, res: Response) => {
         user,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res
       .status(500)
       .json({ message: "Failed to get user", error: error.message });
@@ -112,7 +113,7 @@ export const getAllUsers = async (req: Request, res: Response) => {
         user,
       },
     });
-  } catch (error:any) {
+  } catch (error: any) {
     res
       .status(500)
       .json({ message: "Failed to get all users", error: error.message });
