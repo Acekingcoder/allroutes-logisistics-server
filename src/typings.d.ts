@@ -28,8 +28,8 @@ interface orderDocument extends Document {
       lng: number;
     };
   };
-  pickupDate: Date;
-  deliveryDate: Date;
+  pickupDate?: Date;
+  deliveryDate?: Date;
   createdAt: Date;
   updatedAt: Date;
   status: string;

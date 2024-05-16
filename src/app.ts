@@ -1,6 +1,7 @@
 import express from "express";
 import config from "./config/index";
 import userRoutes from "./routes/userRoutes";
+import orderRoutes from "./routes/orderRoutes";
 import databaseConnection from "./loaders/mongodbLoader";
 import loadingExpressApp from "./loaders/indexLoader";
 
@@ -13,6 +14,7 @@ async function startServer() {
   await loadingExpressApp({ app });
 
   app.use("/api/users", userRoutes);
+  app.use("/api/order", orderRoutes);
 
   app
     .listen(port, () =>
