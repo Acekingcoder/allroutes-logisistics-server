@@ -13,7 +13,6 @@ const orderSchema = new Schema<orderDocument>(
     },
     weight: {
       type: Number,
-      required: true,
     },
     quantity: {
       type: Number,
@@ -39,11 +38,9 @@ const orderSchema = new Schema<orderDocument>(
       coordinates: {
         lat: {
           type: Number,
-          required: true,
         },
         lng: {
           type: Number,
-          required: true,
         },
       },
     },
@@ -63,21 +60,17 @@ const orderSchema = new Schema<orderDocument>(
       coordinates: {
         lat: {
           type: Number,
-          required: true,
         },
         lng: {
           type: Number,
-          required: true,
         },
       },
     },
     pickupDate: {
       type: Date,
-      required: true,
     },
     deliveryDate: {
       type: Date,
-      required: true,
     },
     status: {
       type: String,
@@ -93,9 +86,6 @@ const orderSchema = new Schema<orderDocument>(
       type: Schema.Types.ObjectId,
       ref: "Rider",
     },
-
-    // the name and number of the person who will receive the order so that the rider can contact them.
-    // The user will provide this info when creating the order
     recipient: {
       name: {
         type: String,
