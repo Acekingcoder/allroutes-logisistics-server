@@ -12,7 +12,7 @@ async function startServer() {
   await databaseConnection({});
   await loadingExpressApp({ app });
 
-  app.use("/api", userRoutes);
+  app.use("/api/users", userRoutes);
 
   app
     .listen(port, () =>
