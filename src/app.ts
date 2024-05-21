@@ -4,6 +4,7 @@ import userRoutes from "./routes/userRoutes";
 import orderRoutes from "./routes/orderRoutes";
 import databaseConnection from "./loaders/mongodbLoader";
 import loadingExpressApp from "./loaders/indexLoader";
+import riderRoutes from "./routes/riderRoute"
 
 async function startServer() {
   const app = express();
@@ -15,6 +16,7 @@ async function startServer() {
 
   app.use("/api/users", userRoutes);
   app.use("/api/order", orderRoutes);
+  app.use("/api/rider", riderRoutes);
 
   app
     .listen(port, () =>
