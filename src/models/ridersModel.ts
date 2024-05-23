@@ -2,28 +2,28 @@ import mongoose, { Schema } from "mongoose";
 
 interface IGuarantor {
   contact1: {
-    fullName: string;
-    relationship:
+    c1_fullName: string;
+    c1_relationship:
       | "Father"
       | "Mother"
       | "Brother"
       | "Sister"
       | "Cousin"
       | "Friend";
-    phoneNumber: string;
-    address: string;
+    c1_phoneNumber: string;
+    c1_address: string;
   };
   contact2: {
-    fullName: string;
-    relationship:
+    c2_fullName: string;
+    c2_relationship:
       | "Father"
       | "Mother"
       | "Brother"
       | "Sister"
       | "Cousin"
       | "Friend";
-    phoneNumber: string;
-    address: string;
+    c2_phoneNumber: string;
+    c2_address: string;
   };
 }
 
@@ -78,37 +78,37 @@ const riderSchema = new Schema(
     },
     guarantor: {
       contact1: {
-        fullName: {
+        c1_fullName: {
           type: String,
           required: [true, "Please input full name"],
         },
-        relationship: {
+        c1_relationship: {
           type: String,
           required: [true, "Please select relationship status"],
         },
-        phoneNumber: {
+        c1_phoneNumber: {
           type: String,
           required: [true, "Please input a valid phone number"],
         },
-        address: {
+        c1_address: {
           type: String,
           required: [true, "Please input address"],
         },
       },
       contact2: {
-        fullName: {
+        c2_fullName: {
           type: String,
           required: [true, "Please input full name"],
         },
-        relationship: {
+        c2_relationship: {
           type: String,
           required: [true, "Please select relationship status"],
         },
-        phoneNumber: {
+        c2_phoneNumber: {
           type: String,
           required: [true, "Please input a valid phone number"],
         },
-        address: {
+        c2_address: {
           type: String,
           required: [true, "Please input address"],
         },
