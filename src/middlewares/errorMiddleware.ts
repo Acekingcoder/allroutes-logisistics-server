@@ -1,12 +1,7 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 import { MongoError } from "mongodb";
 
-export const errorHandler = (
-  error: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export const errorHandler = (error: Error, res: Response) => {
   console.error(error);
 
   let statusCode = 500;
