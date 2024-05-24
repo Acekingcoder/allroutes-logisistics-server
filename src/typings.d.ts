@@ -1,15 +1,18 @@
 declare namespace Express {
   export interface Request {
-    user?: any;
+    user: IUserPayload;
   }
 }
 
+interface IUserPayload {
+    id: string;
+    role: string;
+}
+
 interface orderDocument extends Document {
-  name: string;
   description: string;
   weight: number;
-  quantity: number;
-  category: string;
+  specialInstruction: string;
   deliveryAddress: {
     street: string;
     city: string;
@@ -28,7 +31,7 @@ interface orderDocument extends Document {
       lng: number;
     };
   };
-  pickupDate?: Date;
+  pickupDate: Date;
   deliveryDate?: Date;
   createdAt: Date;
   updatedAt: Date;

@@ -18,7 +18,7 @@ export const authenticateUser = (
   }
   try {
     const decoded = jwt.verify(token, JWT_SECRET!);
-    req.user = decoded;
+    req.user = decoded as IUserPayload;
     next();
   } catch (error) {
     return res.status(401).json({ error: "Unauthorized: Invalid token" });

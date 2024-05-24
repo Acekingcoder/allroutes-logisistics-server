@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import userModel, { UserDocument } from "../models/userModel";
+import User from "../models/userModel";
 import bcyrpt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -9,7 +9,7 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const hashedPassword = await bcyrpt.hash(password, 10);
 
-    const newUser = await userModel.create({
+    const newUser = await User.create({
       firstName,
       lastName,
       phoneNumber,
@@ -32,7 +32,7 @@ export const createUser = async (req: Request, res: Response) => {
 export const deleteUser = async (req: Request, res: Response) => {
   const userId = req.params.id;
   try {
-    const deleteUser = await userModel.findByIdAndDelete(userId);
+    const deleteUser = await User.findByIdAndDelete(userId);
 
     if (!deleteUser) {
       return res.status(404).json({ message: "User not found" });
@@ -57,7 +57,7 @@ export const updateUser = async (req: Request, res: Response) => {
   const { firstName, lastName, phoneNumber, email, password } = req.body;
 
   try {
-    const existingUser = await userModel.findById(userId);
+    const existingUser = await User.findById(userId);
 
     if (!existingUser) {
       return res.status(404).json({ message: "User not found" });
@@ -86,7 +86,7 @@ export const updateUser = async (req: Request, res: Response) => {
 export const getUser = async (req: Request, res: Response) => {
   const userId = req.params.id;
   try {
-    const user = await userModel.findById(userId);
+    const user = await User.findById(userId);
 
     if (!user) return res.status(404).json({ message: "User not found" });
     res.status(200).json({
@@ -104,7 +104,7 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const user = await userModel.find();
+    const user = await User.find();
 
     res.status(200).json({
       status: "success",
@@ -123,7 +123,7 @@ export const loginUser = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    const user = await userModel.findOne({ email });
+    const user = await User.findOne({ email });
 
     if (!user)
       return res
@@ -144,7 +144,7 @@ export const loginUser = async (req: Request, res: Response) => {
     // await sendLoginCode(email, code);
 
     const token = jwt.sign(
-      { userId: user._id },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET as string,
       {
         expiresIn: "2d",
