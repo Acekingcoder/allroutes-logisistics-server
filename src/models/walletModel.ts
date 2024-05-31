@@ -1,10 +1,11 @@
+
 import { Document, Schema, Types, model } from "mongoose";
 
 export interface WalletDocument extends Document {
     customerId: Types.ObjectId;
     balance: number;
     transactions: {
-        type: 'debit | credit';
+        type: string;
         amount: number;
         date: Date;
     }[];
