@@ -9,7 +9,12 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const hashedPassword = await bcyrpt.hash(password, 10);
 
-    const newUser = await User.create({
+    let newUser = await User.findOne({ email });
+    if (newUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    newUser = await User.create({
       firstName,
       lastName,
       phoneNumber,
