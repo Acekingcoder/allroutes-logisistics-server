@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import User from "../models/userModel";
 import bcyrpt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import Wallet from "../models/walletModel";
 
 export const createUser = async (req: Request, res: Response) => {
   const { firstName, lastName, phoneNumber, email, password } = req.body;
@@ -9,19 +10,33 @@ export const createUser = async (req: Request, res: Response) => {
   try {
     const hashedPassword = await bcyrpt.hash(password, 10);
 
-    const newUser = await User.create({
+    let newUser = await User.findOne({ email });
+    if (newUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    newUser = await User.create({
       firstName,
       lastName,
       phoneNumber,
       email,
       password: hashedPassword,
     });
+
+    try {
+        await Wallet.create({customerId: newUser._id});
+    } catch {
+        await newUser.deleteOne();
+        throw new Error('wallet creation failed 500');
+    }
+
     res.status(201).json({
       status: "success",
       data: {
         newUser,
       },
     });
+
   } catch (error:any) {
     res
       .status(500)
