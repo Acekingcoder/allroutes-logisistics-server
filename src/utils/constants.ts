@@ -2,10 +2,11 @@
 
 export const orderStatus = {
   pending: 'pending',
+  confirmed: 'confirmed',
   assigned: 'assigned',
   inTransit: 'in-transit',
   delivered: 'delivered',
   cancelled: 'cancelled',
 };
 
-export const CLOSING_HOUR = 16;  // 6pm
+export const CLOSING_HOUR = 18;  // 6pm

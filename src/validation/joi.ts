@@ -28,8 +28,7 @@ export const createOrderSchema = joi.object().keys({
             lng: joi.number(),
         }),
     }),
-    pickupDate: joi.date().required(),
-    // pickupType: joi.string().required().valid("express", "scheduled"),
+    pickupDate: joi.date(),
     deliveryDate: joi.date(),
     recipient: joi.object().keys({
         name: joi.string().required(),

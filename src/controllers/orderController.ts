@@ -11,17 +11,22 @@ export async function createOrder(req: Request, res: Response) {
             return res.status(400).json({ error: error.details[0].message });
         }
 
-        let pickupDate = new Date(value.pickupDate);
         const today = new Date();
-        if (pickupDate < today) {
-            return res.status(400).json({ error: "Invalid pickup date" });
+        let pickupDate = today;
+        if (value.pickupDate) {
+            pickupDate = new Date(value.pickupDate);
+
+            if (pickupDate < today) {
+                return res.status(400).json({ error: "Pickup date cannot be in the past" });
+            }
         }
         const hour = today.getHours();
         if (hour >= CLOSING_HOUR) {
+            // If the current time is past the closing hour, set the pickup date to the next day
             pickupDate.setDate(today.getDate() + 1);
         }
 
-        const order = new Order({...value, pickupDate, customer: req.user.id});
+        const order = new Order({ ...value, pickupDate, customer: req.user.id });
         await order.save();
         return res.status(201).json({ message: "Order created successfully", order });
     } catch (error: any) {
@@ -58,27 +63,45 @@ export async function getOrderById(req: Request, res: Response) {
     }
 }
 
-// todo -- to be implemented after riderController is commenced
-export async function assignRider(req: Request, res: Response) {
-    res.send("Not implemented");
-    // const {orderId, riderId} = req.body;
-    // try {
-    //     const order = await Order.findById(orderId);
-    //     if (!order) {
-    //         return res.status(404).json({ error: "Order not found" });
-    //     }
-    //     if (order.status !== "pending") {
-    //         return res.status(400).json({ error: "Order has already been assigned" });
-    //     }
-    //     const rider = await Rider.findById(riderId);
-    //     if (!rider) {
-    //         return res.status(404).json({ error: "Invalid rider" });
-    //     }
-    //     order.rider = riderId;
-    //     order.status = "assigned";
-    //     await order.save();
-    //     return res.json({ message: "Rider assigned successfully", order });
-    // } catch (error: any) {
-    //     errorHandler(error, req, res, next);
-    // }
+export async function cancelOrder(req: Request, res: Response) {
+    const { orderId } = req.params;
+    const userId = req.user.id;
+    try {
+        const order = await Order.findOne({ _id: orderId, customer: userId });
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        if (order.status !== "pending") {
+            return res.status(400).json({ error: "Order cannot be cancelled" });
+        }
+        order.status = "cancelled";
+        await order.save();
+        return res.json({ message: "Order cancelled successfully", order });
+    } catch (error: any) {
+        errorHandler(error, res);
+    }
+}
+
+export async function confirmOrder(req: Request, res: Response) {
+    const {orderId} = req.params;
+    const userId = req.user.id;
+    try {
+        const order = await Order.findOne({ _id: orderId, customer: userId });
+        if (!order) {
+            return res.status(404).json({ error: "Order not found" });
+        }
+        if (order.status !== "pending") {
+            return res.status(400).json({ error: "Order has already been confirmed or was cancelled" });
+        }
+
+        // todo --> implement payment logic here
+        // todo --> implement notification logic here
+        // todo --> assign order to a rider
+
+        order.status = "confirmed";
+        await order.save();
+        return res.json({ message: "Order confirmed successfully", order });
+    } catch (error: any) {
+        errorHandler(error, res);
+    }
 }
