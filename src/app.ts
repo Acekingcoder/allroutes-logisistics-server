@@ -1,3 +1,4 @@
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
@@ -37,46 +38,38 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Allroutes Logistics server running on port ${PORT}`)
 })
-// .on("error", (error) => {
-//   console.log(error.message);
-//   process.exit(1);
-// });
 
-// import express from "express";
-// import config from "./config/index";
-// import userRoutes from "./routes/userRoutes";
-// import orderRoutes from "./routes/orderRoutes";
-// import databaseConnection from "./loaders/mongodbLoader";
-// import loadingExpressApp from "./loaders/indexLoader";
-// import riderRoutes from "./routes/riderRoute";
-// import transactionRoutes from "./routes/transactionRoutes";
-// import cors from 'cors';
 
-// async function startServer() {
-//   const app = express();
+import config from "./config/index";
+import userRoutes from "./routes/userRoutes";
+import orderRoutes from "./routes/orderRoutes";
+import txRoutes from "./routes/txRoutes";
+import databaseConnection from "./loaders/mongodbLoader";
+import loadingExpressApp from "./loaders/indexLoader";
+import riderRoutes from "./routes/riderRoute"
 
-//   const { port } = config;
+async function startServer() {
+  const app = express();
 
-//   await databaseConnection({});
-//   await loadingExpressApp({ app });
+  const { port } = config;
 
-//   app.use(cors({origin: true, credentials: true}));
-//   app.use('/', indexPage);
-//   app.use("/api/users", userRoutes);
-//   app.use("/api/order", orderRoutes);
-//   app.use("/api/rider", riderRoutes);
-//   app.use("/api/transaction", transactionRoutes)
+  await databaseConnection({});
+  await loadingExpressApp({ app });
 
-//   app
-//     .listen(port, () =>
-//       console.log(`Allroutes Logistics server running on http://localhost:${port}`)
-//     )
-//     .on("error", (error) => {
-//       console.log(error.message);
-//       process.exit(1);
-//     });
-// }
+  app.use("/api/users", userRoutes);
+  app.use("/api/order", orderRoutes);
+  app.use("/api/rider", riderRoutes);
+  app.use("/api/tx", riderRoutes);
 
-// startServer();
+  app
+    .listen(port, () =>
+      console.log(`Allroutes Logistics server running on port ${port}`)
+    )
+    .on("error", (error) => {
+      console.log(error.message);
+      process.exit(1);
+    });
+}
 
+startServer();
 
