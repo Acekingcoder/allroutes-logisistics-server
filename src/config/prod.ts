@@ -1,13 +1,13 @@
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 
-dotenv.config();
+// dotenv.config();
 
-const { PROD_PORT, MORGAN, PROD_MONGO_URI } = process.env;
+// const { PROD_PORT, MORGAN, PROD_MONGO_URI } = process.env;
 
-export default {
-  port: PROD_PORT,
-  logs: {
-    morgan: MORGAN!,
-  },
-  mongoURI: PROD_MONGO_URI!,
-};
+// export default {
+//   port: PROD_PORT,
+//   logs: {
+//     morgan: MORGAN!,
+//   },
+//   mongoURI: PROD_MONGO_URI!,
+// };
