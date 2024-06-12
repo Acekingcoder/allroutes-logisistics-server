@@ -44,10 +44,11 @@ interface orderDocument extends Document {
     };
 }
 
-interface TransactionDocument {
+interface transactionDocument extends Document{
     amount: number;
     transactionType: string;
     status: string;
     ref: string;
     user: Types.ObjectId;
+    reference: string;
 }

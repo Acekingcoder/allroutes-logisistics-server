@@ -1,6 +1,6 @@
-import mongoose, { Schema, model, Document, Types } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 
-const transactionSchema = new Schema<TransactionDocument>(
+const transactionSchema = new Schema<transactionDocument>(
     {
         amount: {
             type: Number,
@@ -19,10 +19,14 @@ const transactionSchema = new Schema<TransactionDocument>(
         user: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            required: true,
+            // required: true,
         },
+        reference: {
+            type: String,
+            unique: true
+        }
     },
     { timestamps: true }
 );
 
-export default model<TransactionDocument>("Transaction", transactionSchema);
+export default model<transactionDocument>("Transaction", transactionSchema);

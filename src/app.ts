@@ -1,31 +1,82 @@
-import express from "express";
-import config from "./config/index";
-import userRoutes from "./routes/userRoutes";
-import orderRoutes from "./routes/orderRoutes";
-import databaseConnection from "./loaders/mongodbLoader";
-import loadingExpressApp from "./loaders/indexLoader";
-import riderRoutes from "./routes/riderRoute"
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import logger from 'morgan';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import indexRouter from './routes/index';
+import usersRouter from './routes/users';
+import authRouter from './routes/auth';
+import orderRouter from './routes/order';
+import riderRouter from './routes/rider';
+import transactionRouter from './routes/transaction';
+import connectDB from './config/database';
 
-async function startServer() {
-  const app = express();
+dotenv.config();
+connectDB();
 
-  const { port } = config;
+const app = express();
+app.use(cors({ origin: true, credentials: true }));
+app.use(logger('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-  await databaseConnection({});
-  await loadingExpressApp({ app });
+app.use('/', indexRouter);
+app.use('/auth', authRouter);
+app.use('/users', usersRouter);
+app.use('/order', orderRouter);
+app.use('/rider', riderRouter);
+app.use('/transaction', transactionRouter);
 
-  app.use("/api/users", userRoutes);
-  app.use("/api/order", orderRoutes);
-  app.use("/api/rider", riderRoutes);
+// Handle 404 Not Found
+app.use("/*", (req, res) => {
+    return res.status(404).json("Endpoint not found");
+});
 
-  app
-    .listen(port, () =>
-      console.log(`Allroutes Logistics server running on port ${port}`)
-    )
-    .on("error", (error) => {
-      console.log(error.message);
-      process.exit(1);
-    });
-}
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Allroutes Logistics server running on port ${PORT}`)
+})
+// .on("error", (error) => {
+//   console.log(error.message);
+//   process.exit(1);
+// });
 
-startServer();
+// import express from "express";
+// import config from "./config/index";
+// import userRoutes from "./routes/userRoutes";
+// import orderRoutes from "./routes/orderRoutes";
+// import databaseConnection from "./loaders/mongodbLoader";
+// import loadingExpressApp from "./loaders/indexLoader";
+// import riderRoutes from "./routes/riderRoute";
+// import transactionRoutes from "./routes/transactionRoutes";
+// import cors from 'cors';
+
+// async function startServer() {
+//   const app = express();
+
+//   const { port } = config;
+
+//   await databaseConnection({});
+//   await loadingExpressApp({ app });
+
+//   app.use(cors({origin: true, credentials: true}));
+//   app.use('/', indexPage);
+//   app.use("/api/users", userRoutes);
+//   app.use("/api/order", orderRoutes);
+//   app.use("/api/rider", riderRoutes);
+//   app.use("/api/transaction", transactionRoutes)
+
+//   app
+//     .listen(port, () =>
+//       console.log(`Allroutes Logistics server running on http://localhost:${port}`)
+//     )
+//     .on("error", (error) => {
+//       console.log(error.message);
+//       process.exit(1);
+//     });
+// }
+
+// startServer();
+
+
