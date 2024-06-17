@@ -1,9 +1,10 @@
 import {Router} from 'express';
+import * as auth from '../controllers/userController';
 
 const router = Router();
 
-router.get('/', function(req, res){
-    return res.send('auth route handlers');
-});
+router.post('/register', auth.createUser);
+router.post('/login', auth.loginUser);
+router.post('/forgot-password', auth.sendPasswordResetOtp)
 
 export default router;

@@ -34,6 +34,24 @@ export const createOrderSchema = joi.object().keys({
         name: joi.string().required(),
         phone: joi.string().required(),
     })
-})
+});
+
+export const createUserSchema = joi.object().keys({
+    firstName: joi.string().required(),
+    lastName: joi.string().required(),
+    phoneNumber: joi.string().required(),
+    email: joi.string().email().required(),
+    password: joi.string().required(),
+    confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
+});
+
+export const userLoginSchema = joi.object().keys({
+    email: joi.string().email().required().trim(),
+    password: joi.string().required(),
+});
+
+export const forgotPasswordSchema = joi.object().keys({
+    email: joi.string().email().required().trim()
+});
 
 // add more validators here

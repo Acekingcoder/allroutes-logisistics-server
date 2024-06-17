@@ -9,7 +9,7 @@ interface IUserPayload {
     role: string;
 }
 
-interface orderDocument extends Document {
+interface IOrder extends Document {
     description: string;
     weight: number;
     specialInstruction: string;
@@ -44,7 +44,7 @@ interface orderDocument extends Document {
     };
 }
 
-interface transactionDocument extends Document{
+interface ITransaction extends Document {
     amount: number;
     transactionType: string;
     status: string;
@@ -52,3 +52,5 @@ interface transactionDocument extends Document{
     user: Types.ObjectId;
     reference: string;
 }
+
+
