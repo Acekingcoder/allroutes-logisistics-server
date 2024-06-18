@@ -38,3 +38,4 @@ yarn.lock
 # Ignore developer-specific files
 todo.md
 scripts/
+email.html

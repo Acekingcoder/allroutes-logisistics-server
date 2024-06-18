@@ -6,7 +6,7 @@ import { verifyTransaction } from '../utils/paystack';
 export async function fundWallet(req: Request, res: Response) {
     console.log("Funding wallet");
     try {
-        // const userId = req.user.id;
+        const userId = req.user.id;
         const { reference } = req.body;
 
         const processed = await Transaction.findOne({ reference });
@@ -29,7 +29,7 @@ export async function fundWallet(req: Request, res: Response) {
         await Transaction.create({
             amount,
             transactionType: "credit",
-            // user: userId,
+            user: userId,
             reference
         });
 

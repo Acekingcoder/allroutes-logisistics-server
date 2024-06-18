@@ -5,7 +5,7 @@ import Wallet from "../models/walletModel";
 import * as joi from "../validation/joi";
 import { attachToken, generateToken } from "../utils/jwt";
 import Token from '../models/tokenModel';
-import sendMail from "../utils/sendMail";
+import sendMail, { getPasswordResetHTML } from "../utils/sendMail";
 import { passwordCheck } from "../utils/helperFunctions";
 
 export const createUser = async (req: Request, res: Response) => {
@@ -114,13 +114,11 @@ export const getUser = async (req: Request, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
     try {
-        const user = await User.find();
+        const users = await User.find().select('-password -__v');
 
         res.status(200).json({
             status: "success",
-            data: {
-                user,
-            },
+            users
         });
     } catch (error: any) {
         res
@@ -156,27 +154,6 @@ export const loginUser = async (req: Request, res: Response) => {
     }
 };
 
-// export const verifyCode = async (req: Request, res: Response) => {
-//   const { email, code } = req.body;
-//   try {
-//     const user: UserDocument | null = await userModel.findOne({ email });
-
-//     if (!user) {
-//       return res.status(404).json({ error: "User not found" });
-//     }
-
-//     if (!validateCode(code, user.code)) {
-//       return res.status(401).json({ error: "Invalid verification code" });
-//     }
-//     user.code = undefined;
-
-//     await user.save();
-
-//     return res.status(200).json({ message: "Verification successful!" });
-//   } catch (error) {}
-// };
-
-
 export async function sendPasswordResetOtp(req: Request, res: Response) {
     try {
         const { error, value } = joi.forgotPasswordSchema.validate(req.body);
@@ -196,7 +173,7 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
         });
         await token.save();
 
-        sendMail(value.email, 'AllRoute: Password Reset', `Password reset token: <strong>${token.otp}<strong/>`)
+        sendMail(value.email, 'AllRoute: Password Reset', getPasswordResetHTML(user.firstName, token.otp));
         return res.json({
             message: 'Check your email for password reset token'
         });
@@ -220,8 +197,7 @@ export async function resetPassword(req: Request, res: Response) {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const token = await Token.findOne({ otp, type: 'password', user: user._id });
-        console.log(token, { otp, type: 'password', user: user._id });
+        const token = await Token.findOne({ otp, type: 'password', user: user._id, expires: { $gt: new Date() }});
         if (!token) return res.status(404).json({ error: 'Invalid or expired token' });
 
         user.password = await bcrypt.hash(newPassword, 10);
