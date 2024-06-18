@@ -215,10 +215,13 @@ export async function resetPassword(req: Request, res: Response) {
         if (error) return res.status(400).json({ error: error.message });
 
         const { newPassword, otp } = value;
+        const result = passwordCheck(newPassword);
+        if (result.error) return res.status(400).json({ error: result.error });
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
         const token = await Token.findOne({ otp, type: 'password', user: user._id });
+        console.log(token, { otp, type: 'password', user: user._id });
         if (!token) return res.status(404).json({ error: 'Invalid or expired token' });
 
         user.password = await bcrypt.hash(newPassword, 10);
