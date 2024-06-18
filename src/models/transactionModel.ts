@@ -19,7 +19,7 @@ const transactionSchema = new Schema<ITransaction>(
         user: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            // required: true,
+            required: true,
         },
         reference: {
             type: String,

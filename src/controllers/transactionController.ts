@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { errorHandler } from '../middlewares/errorMiddleware';
 import Transaction from '../models/transactionModel';
-import { verifyTransaction } from '../services/paystackService';
+import { verifyTransaction } from '../utils/paystack';
 
 export async function fundWallet(req: Request, res: Response) {
     console.log("Funding wallet");

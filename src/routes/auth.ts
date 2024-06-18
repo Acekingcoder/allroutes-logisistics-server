@@ -5,6 +5,7 @@ const router = Router();
 
 router.post('/register', auth.createUser);
 router.post('/login', auth.loginUser);
-router.post('/forgot-password', auth.sendPasswordResetOtp)
+router.post('/forgot-password', auth.sendPasswordResetOtp);
+router.post('/reset-password', auth.resetPassword);
 
 export default router;

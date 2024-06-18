@@ -5,14 +5,17 @@ import Wallet from "../models/walletModel";
 import * as joi from "../validation/joi";
 import { attachToken, generateToken } from "../utils/jwt";
 import Token from '../models/tokenModel';
-import sendMail from "../services/mailServices";
+import sendMail from "../utils/sendMail";
+import { passwordCheck } from "../utils/helperFunctions";
 
 export const createUser = async (req: Request, res: Response) => {
     try {
         const { error, value } = joi.createUserSchema.validate(req.body);
-        if (error) return res.status(400).json(error.message);
+        if (error) return res.status(400).json({error: error.message});
         let newUser = await User.findOne({ email: value.email });
         if (newUser) return res.status(409).json({ error: "Email has been used" });
+        const result = passwordCheck(value.password);
+        if (result.error) return res.status(400).json({ error: result.error });
         newUser = await User.create({ ...value, password: await bcrypt.hash(value.password, 10) });
 
         try {
@@ -196,6 +199,34 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
         sendMail(value.email, 'AllRoute: Password Reset', `Password reset token: <strong>${token.otp}<strong/>`)
         return res.json({
             message: 'Check your email for password reset token'
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Internal Server Error' });
+    }
+}
+
+export async function resetPassword(req: Request, res: Response) {
+    try {
+        const { email } = req.query;
+        if (!email) return res.status(400).json({ error: 'Email is required in the request query' });
+        const { error, value } = joi.resetPasswordSchema.validate(req.body);
+        if (error) return res.status(400).json({ error: error.message });
+
+        const { newPassword, otp } = value;
+        const user = await User.findOne({ email });
+        if (!user) return res.status(404).json({ error: 'User not found' });
+
+        const token = await Token.findOne({ otp, type: 'password', user: user._id });
+        if (!token) return res.status(404).json({ error: 'Invalid or expired token' });
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        await token.deleteOne();
+
+        return res.json({
+            message: 'Password reset successful'
         });
 
     } catch (error) {

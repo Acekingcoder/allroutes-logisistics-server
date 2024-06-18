@@ -41,7 +41,7 @@ export const createUserSchema = joi.object().keys({
     lastName: joi.string().required(),
     phoneNumber: joi.string().required(),
     email: joi.string().email().required(),
-    password: joi.string().required(),
+    password: joi.string().min(6).required(),
     confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
 });
 
@@ -52,6 +52,12 @@ export const userLoginSchema = joi.object().keys({
 
 export const forgotPasswordSchema = joi.object().keys({
     email: joi.string().email().required().trim()
+});
+
+export const resetPasswordSchema = joi.object().keys({
+    newPassword: joi.string().required(),
+    confirm: joi.string().valid(joi.ref('newPassword')).required().messages({ 'any.only': 'Passwords do not match' }),
+    token: joi.string().required()
 });
 
 // add more validators here
