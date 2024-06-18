@@ -34,3 +34,7 @@ yarn-error.log*
 # Ignore npm package lock files
 package-lock.json
 yarn.lock
+
+# Ignore developer-specific files
+todo.md
+scripts/
