@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { orderStatus } from "../utils/constants";
 
-const orderSchema = new Schema<orderDocument>(
+const orderSchema = new Schema<IOrder>(
     {
         description: {
             type: String,
@@ -94,5 +94,5 @@ const orderSchema = new Schema<orderDocument>(
     }
 );
 
-const Order = mongoose.model<orderDocument>("Order", orderSchema);
+const Order = mongoose.model<IOrder>("Order", orderSchema);
 export default Order;
