@@ -60,4 +60,11 @@ export const resetPasswordSchema = joi.object().keys({
     otp: joi.string().required()
 });
 
+export const createAdminSchema = joi.object().keys({
+    firstName: joi.string(),
+    lastName: joi.string(),
+    email: joi.string().email().required(),
+    password: joi.string().min(6).required()
+});
+
 // add more validators here

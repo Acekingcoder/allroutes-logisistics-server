@@ -31,7 +31,7 @@ export const getPasswordResetHTML = (firstName: string, otp: string) => `
             <p>Hello ${firstName},</p>
             <p>To reset your AllRoutes account password, please use the following code for verification</p>
             <p style="background-color: rgb(29, 68, 24); color: white; padding: 10px; margin: 20px 0; width: 150px; text-align: center; font-weight: 700; border-radius: 20px; letter-spacing: 4px;">${otp}</p>
-            <p>This code expires in 10 minutes.</p>
+            <p>This code expires in 30 minutes.</p>
         </main>
         <footer style="color:rgb(64, 81, 60)">
             <p>© AllRoutes Logistics. All Rights Reserved</p>

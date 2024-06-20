@@ -4,7 +4,7 @@ interface  IToken extends mongoose.Document {
     user: Types.ObjectId;
     otp: string;
     type: string;
-    expires: Date;
+    expires: number;
 }
 
 const tokenSchema = new mongoose.Schema<IToken>(
@@ -24,9 +24,9 @@ const tokenSchema = new mongoose.Schema<IToken>(
             enum: ["email", "password"],
         },
         expires: {
-            type: Date,
+            type: Number,
             required: true,
-            default: Date.now() + 10 * 60 * 1000, // 10mins validity
+            default: Date.now() + 30 * 60 * 1000, // 30mins validity
         },
     },
     {
