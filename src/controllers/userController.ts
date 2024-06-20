@@ -11,7 +11,7 @@ import { passwordCheck } from "../utils/helperFunctions";
 export const createUser = async (req: Request, res: Response) => {
     try {
         const { error, value } = joi.createUserSchema.validate(req.body);
-        if (error) return res.status(400).json({error: error.message});
+        if (error) return res.status(400).json({ error: error.message });
         let newUser = await User.findOne({ email: value.email });
         if (newUser) return res.status(409).json({ error: "Email has been used" });
         const result = passwordCheck(value.password);
@@ -28,41 +28,16 @@ export const createUser = async (req: Request, res: Response) => {
 
         res.status(201).json({
             status: "success",
-            data: {
-                newUser,
-            },
+            newUser,
         });
 
     } catch (error: any) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-};
-
-export const deleteUser = async (req: Request, res: Response) => {
-    const userId = req.params.id;
-    try {
-        const deleteUser = await User.findByIdAndDelete(userId);
-
-        if (!deleteUser) {
-            return res.status(404).json({ message: "User not found" });
-        }
-
-        res.status(200).json({
-            status: "success",
-            data: {
-                deleteUser,
-            },
-        });
-    } catch (error: any) {
-        res
-            .status(500)
-            .json({ message: "Failed to delete user", error: error.message });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-    const userId = req.params.id;
+    const { userId } = req.params;
 
     const { firstName, lastName, phoneNumber, email, password } = req.body;
 
@@ -82,33 +57,25 @@ export const updateUser = async (req: Request, res: Response) => {
 
         res.status(200).json({
             status: "success",
-            data: {
-                updateUser,
-            },
+            updateUser,
         });
     } catch (error: any) {
-        res
-            .status(500)
-            .json({ message: "Failed to update user", error: error.message });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
-export const getUser = async (req: Request, res: Response) => {
-    const userId = req.params.id;
+export const getUserById = async (req: Request, res: Response) => {
+    const { userId } = req.params;
     try {
         const user = await User.findById(userId);
 
         if (!user) return res.status(404).json({ message: "User not found" });
         res.status(200).json({
             status: "success",
-            data: {
-                user,
-            },
+            user
         });
     } catch (error: any) {
-        res
-            .status(500)
-            .json({ message: "Failed to get user", error: error.message });
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
@@ -121,36 +88,30 @@ export const getAllUsers = async (req: Request, res: Response) => {
             users
         });
     } catch (error: any) {
-        res
-            .status(500)
-            .json({ message: "Failed to get all users", error: error.message });
+        res.status(500).json({
+            message: "Failed to get all users",
+            error: error.message
+        });
     }
 };
 
 export const loginUser = async (req: Request, res: Response) => {
     try {
-        const {error, value} = joi.userLoginSchema.validate(req.body);
-        if (error) return res.status(400).json({error: error.message});
+        console.log(req.body.email, req.body.password);
+        const { error, value } = joi.userLoginSchema.validate(req.body);
+        if (error) return res.status(400).json({ error: error.message });
         const user = await User.findOne({ email: value.email });
         if (!user) return res.status(401).json({ error: "Invalid credentials!" });
 
         const isValid = await bcrypt.compare(value.password, user.password as string);
         if (!isValid) return res.status(401).json({ error: "Invalid credentials!" });
 
-        // const code = generateCode();
-
-        // user.code = code;
-        // await user.save();
-
-        // await sendLoginCode(email, code);
-
         const token = generateToken(user);
         attachToken(token, res);
 
         return res.json({ token, user });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    } catch (error: any) {
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
@@ -175,12 +136,12 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
 
         sendMail(value.email, 'AllRoute: Password Reset', getPasswordResetHTML(user.firstName, token.otp));
         return res.json({
-            message: 'Check your email for password reset token'
+            message: 'Check your email for password reset token',
         });
 
-    } catch (error) {
+    } catch (error: any) {
         console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+        return res.status(500).json({ message: 'Internal Server Error', error: error.message });
     }
 }
 
@@ -197,8 +158,12 @@ export async function resetPassword(req: Request, res: Response) {
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
-        const token = await Token.findOne({ otp, type: 'password', user: user._id, expires: { $gt: new Date() }});
-        if (!token) return res.status(404).json({ error: 'Invalid or expired token' });
+        const now = new Date();
+        const token = await Token.findOne({ otp, type: 'password', user: user._id });
+        if (!token) return res.status(400).json({ error: 'Invalid token' });
+        if(token.expires < now.getTime()){
+            return res.status(400).json({error: 'Expired token. Please make a new forgot password request.'});
+        }
 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
@@ -208,8 +173,31 @@ export async function resetPassword(req: Request, res: Response) {
             message: 'Password reset successful'
         });
 
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ error: 'Internal Server Error' });
+    } catch (error: any) {
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 }
+
+// admin delete user function
+export async function deleteUserById(req: Request, res: Response) {
+    try {
+        const { userId } = req.params;
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ error: "User not found" });
+        const wallet = await Wallet.findOne({ customerId: userId });
+        const userBalance = wallet?.balance;
+        if (userBalance) return res.status(400).json({
+            error: "Failed to delete user",
+            message: "User account balance is not zero"
+        })
+        await user.deleteOne();
+        if (wallet) await wallet.deleteOne();
+        res.json({ message: 'User account deleted successfully' });
+
+    } catch (error: any) {
+        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+    }
+}
+
+// todo --> get user profile controller
+// ...
