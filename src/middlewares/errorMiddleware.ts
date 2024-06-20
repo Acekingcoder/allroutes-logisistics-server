@@ -26,5 +26,5 @@ export const errorHandler = (error: Error, res: Response) => {
     }
   }
   console.log(error);
-  res.status(statusCode).json({ error: errorMessage });
+  res.status(statusCode).json({ message: errorMessage });
 };

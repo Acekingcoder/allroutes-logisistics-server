@@ -11,11 +11,11 @@ import { passwordCheck } from "../utils/helperFunctions";
 export const createUser = async (req: Request, res: Response) => {
     try {
         const { error, value } = joi.createUserSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.message });
+        if (error) return res.status(400).json({ message: error.message });
         let newUser = await User.findOne({ email: value.email });
-        if (newUser) return res.status(409).json({ error: "Email has been used" });
+        if (newUser) return res.status(409).json({ message: "Email has been used" });
         const result = passwordCheck(value.password);
-        if (result.error) return res.status(400).json({ error: result.error });
+        if (result.error) return res.status(400).json({ message: result.error });
         newUser = await User.create({ ...value, password: await bcrypt.hash(value.password, 10) });
 
         try {
@@ -88,23 +88,19 @@ export const getAllUsers = async (req: Request, res: Response) => {
             users
         });
     } catch (error: any) {
-        res.status(500).json({
-            message: "Failed to get all users",
-            error: error.message
-        });
+        res.status(500).json({ message: "Internal Server Error", error: error.message });
     }
 };
 
 export const loginUser = async (req: Request, res: Response) => {
     try {
-        console.log(req.body.email, req.body.password);
         const { error, value } = joi.userLoginSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.message });
+        if (error) return res.status(400).json({ message: error.message });
         const user = await User.findOne({ email: value.email });
-        if (!user) return res.status(401).json({ error: "Invalid credentials!" });
+        if (!user) return res.status(401).json({ message: "Invalid credentials!" });
 
         const isValid = await bcrypt.compare(value.password, user.password as string);
-        if (!isValid) return res.status(401).json({ error: "Invalid credentials!" });
+        if (!isValid) return res.status(401).json({ message: "Invalid credentials!" });
 
         const token = generateToken(user);
         attachToken(token, res);
@@ -118,11 +114,11 @@ export const loginUser = async (req: Request, res: Response) => {
 export async function sendPasswordResetOtp(req: Request, res: Response) {
     try {
         const { error, value } = joi.forgotPasswordSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.message });
+        if (error) return res.status(400).json({ message: error.message });
 
         const user = await User.findOne({ email: value.email });
 
-        if (!user) return res.status(404).json({ error: 'User with given email does not exist' });
+        if (!user) return res.status(404).json({ message: 'User with given email does not exist' });
 
         let token = await Token.findOne({ user: user._id, type: 'password' });
         if (token) await token.deleteOne();
@@ -134,7 +130,9 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
         });
         await token.save();
 
-        sendMail(value.email, 'AllRoute: Password Reset', getPasswordResetHTML(user.firstName, token.otp));
+        const sendMailResult = await sendMail(value.email, 'AllRoute: Password Reset', getPasswordResetHTML(user.firstName, token.otp));
+        if (!sendMailResult.success) return res.status(535).json({ message: 'Failed to send email', error: sendMailResult.message });
+
         return res.json({
             message: 'Check your email for password reset token',
         });
@@ -148,21 +146,21 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
 export async function resetPassword(req: Request, res: Response) {
     try {
         const { email } = req.query;
-        if (!email) return res.status(400).json({ error: 'Email is required in the request query' });
+        if (!email) return res.status(400).json({ message: 'Email is required in the request query' });
         const { error, value } = joi.resetPasswordSchema.validate(req.body);
-        if (error) return res.status(400).json({ error: error.message });
+        if (error) return res.status(400).json({ message: error.message });
 
         const { newPassword, otp } = value;
         const result = passwordCheck(newPassword);
-        if (result.error) return res.status(400).json({ error: result.error });
+        if (result.error) return res.status(400).json({ message: result.error });
         const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        if (!user) return res.status(404).json({ message: 'User not found' });
 
         const now = new Date();
         const token = await Token.findOne({ otp, type: 'password', user: user._id });
-        if (!token) return res.status(400).json({ error: 'Invalid token' });
-        if(token.expires < now.getTime()){
-            return res.status(400).json({error: 'Expired token. Please make a new forgot password request.'});
+        if (!token) return res.status(400).json({ message: 'Invalid token' });
+        if (token.expires < now.getTime()) {
+            return res.status(400).json({ message: 'Expired token. Please make a new forgot password request.' });
         }
 
         user.password = await bcrypt.hash(newPassword, 10);
@@ -183,12 +181,12 @@ export async function deleteUserById(req: Request, res: Response) {
     try {
         const { userId } = req.params;
         const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ error: "User not found" });
+        if (!user) return res.status(404).json({ message: "User not found" });
         const wallet = await Wallet.findOne({ customerId: userId });
         const userBalance = wallet?.balance;
         if (userBalance) return res.status(400).json({
-            error: "Failed to delete user",
-            message: "User account balance is not zero"
+            message: "Failed to delete user",
+            error: "User account balance is not zero"
         })
         await user.deleteOne();
         if (wallet) await wallet.deleteOne();

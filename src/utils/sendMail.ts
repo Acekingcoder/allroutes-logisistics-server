@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export default function (to: string, subject: string, text: string) {
+export default async function sendMail(to: string, subject: string, text: string) {
     const user = process.env.GMAIL;
     const pass = process.env.GMAIL_PASSWORD;
     const host = process.env.GMAIL_HOST;
@@ -9,17 +9,13 @@ export default function (to: string, subject: string, text: string) {
     const transporter = nodemailer.createTransport({ host, port, secure: true, auth: { user, pass } });
     const mailOptions = { from: user, to, subject, html: text };
 
-    let result = false;
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            console.error(error.message);
-        } else {
-            result = true;
-            console.log("Email sent: " + info.response);
-        }
-    });
-
-    return result;
+    try {
+        const info = await transporter.sendMail(mailOptions);
+        console.log("Email sent: " + info.response);
+        return { success: true, message: "Email sent successfully" };
+    } catch (error: any) {
+        return { success: false, message: error.message };
+    }
 }
 
 export const getPasswordResetHTML = (firstName: string, otp: string) => `
