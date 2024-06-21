@@ -9,14 +9,14 @@ export const authenticateUser = (
     const token = req.headers.authorization?.split(" ")[1] || req.cookies.token;
 
     if (!token) {
-        return res.status(401).json({ error: "Please login" });
+        return res.status(401).json({ message: "Please login" });
     }
     try {
         const decoded = verifyToken(token);
         req.user = decoded as IUserPayload;
         next();
     } catch (error) {
-        return res.status(401).json({ error: "Please login" });
+        return res.status(401).json({ message: "Please login" });
     }
 };
 
@@ -24,7 +24,7 @@ export function authenticateAdmin(req: Request, res: Response, next: NextFunctio
     const token = req.headers.authorization?.split(" ")[1] || req.cookies.token;
 
     if (!token) {
-        return res.status(403).json({ error: "Please login as an admin" });
+        return res.status(403).json({ message: "Please login as an admin" });
     }
 
     try {
@@ -33,8 +33,8 @@ export function authenticateAdmin(req: Request, res: Response, next: NextFunctio
             req.user = decoded as IUserPayload;
             return next();
         }
-        return res.status(401).json({ error: "Please login as an admin" });
+        return res.status(401).json({ message: "Please login as an admin" });
     } catch (error) {
-        return res.status(401).json({ error: "Please login as an admin" });
+        return res.status(401).json({ message: "Please login as an admin" });
     }
 }

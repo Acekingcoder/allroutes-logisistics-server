@@ -58,7 +58,7 @@ export async function getOrderById(req: Request, res: Response) {
     try {
         // const order = await Order.findById(orderId);
         const order = await Order.findOne({ _id: orderId, customer: req.user.id });
-        if (!order) return res.status(404).json({ error: "Order not found" });
+        if (!order) return res.status(404).json({ message: "Order not found" });
         return res.json({ order });
     } catch (error: any) {
         errorHandler(error, res);
@@ -71,10 +71,10 @@ export async function cancelOrder(req: Request, res: Response) {
     try {
         const order = await Order.findOne({ _id: orderId, customer: userId });
         if (!order) {
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ message: "Order not found" });
         }
         if (order.status !== "pending") {
-            return res.status(400).json({ error: "Order cannot be cancelled" });
+            return res.status(400).json({ message: "Order cannot be cancelled" });
         }
         order.status = "cancelled";
         await order.save();
@@ -90,10 +90,10 @@ export async function confirmOrder(req: Request, res: Response) {
     try {
         const order = await Order.findOne({ _id: orderId, customer: userId });
         if (!order) {
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ message: "Order not found" });
         }
         if (order.status !== "pending") {
-            return res.status(400).json({ error: "Order has already been confirmed or was cancelled" });
+            return res.status(400).json({ message: "Order has already been confirmed or was cancelled" });
         }
 
         // todo --> implement payment logic here
