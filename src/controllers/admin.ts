@@ -1,11 +1,10 @@
 import Admin from '../models/admin';
-import User from '../models/userModel';
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import * as joi from '../validation/joi';
-import { generateToken, attachToken } from '../utils/jwt';
+import { signToken, attachToken } from '../utils/jwt';
 
-// create admindf
+// CREATE ADMIN
 export async function create(req: Request, res: Response) {
     try {
         const { error, value } = joi.createAdminSchema.validate(req.body);
@@ -19,7 +18,7 @@ export async function create(req: Request, res: Response) {
     }
 }
 
-// login admin
+// LOGIN ADMIN
 export async function login(req: Request, res: Response) {
     try {
         const { error, value } = joi.userLoginSchema.validate(req.body);
@@ -30,7 +29,7 @@ export async function login(req: Request, res: Response) {
         const isValid = await bcrypt.compare(value.password, admin.password as string);
         if (!isValid) return res.status(401).json({ message: "Invalid admin credentials!" });
 
-        const token = generateToken(admin);
+        const token = signToken(admin);
         attachToken(token, res);
 
         return res.json({ message: 'Admin login successful', admin: admin.email });
@@ -40,6 +39,7 @@ export async function login(req: Request, res: Response) {
     }
 }
 
+// UNUSED -- GET ALL ADMINS
 export async function getAll(req: Request, res: Response) {
     try {
         const admins = await Admin.find().select('email');
@@ -49,6 +49,4 @@ export async function getAll(req: Request, res: Response) {
         res.status(500).json({ message: "Failed to login admin" });
     }
 }
-
-// delete admin
 

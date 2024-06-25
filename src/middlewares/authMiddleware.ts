@@ -1,11 +1,7 @@
 import { Request, Response, NextFunction } from "express";
 import { verifyToken } from "../utils/jwt";
 
-export const authenticateUser = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
+export function authenticate(req: Request, res: Response, next: NextFunction) {
     const token = req.headers.authorization?.split(" ")[1] || req.cookies.token;
 
     if (!token) {
@@ -20,21 +16,26 @@ export const authenticateUser = (
     }
 };
 
-export function authenticateAdmin(req: Request, res: Response, next: NextFunction) {
-    const token = req.headers.authorization?.split(" ")[1] || req.cookies.token;
-
-    if (!token) {
-        return res.status(403).json({ message: "Please login as an admin" });
+export function authorizeAdmin(req: Request, res: Response, next: NextFunction) {
+    const role = req.user.role;
+    if (role !== "admin") {
+        return res.status(401).json({ message: "Unauthorized" });
     }
+    next();
+}
 
-    try {
-        const decoded = verifyToken(token);
-        if (decoded.role === "admin") {
-            req.user = decoded as IUserPayload;
-            return next();
-        }
-        return res.status(401).json({ message: "Please login as an admin" });
-    } catch (error) {
-        return res.status(401).json({ message: "Please login as an admin" });
+export function authorizeRider(req: Request, res: Response, next: NextFunction) {
+    const role = req.user.role;
+    if (role !== "rider") {
+        return res.status(401).json({ message: "Unauthorized" });
     }
+    next();
+}
+
+export function authorizeCustomer(req: Request, res: Response, next: NextFunction) {
+    const role = req.user.role;
+    if (role !== "customer") {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+    next();
 }

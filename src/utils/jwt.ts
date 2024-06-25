@@ -3,6 +3,7 @@ import { Response } from "express";
 import dotenv from "dotenv";
 import { IUser } from "../models/userModel";
 import { IAdmin } from "../models/admin";
+import { IRider } from "../models/ridersModel";
 
 dotenv.config();
 
@@ -13,8 +14,8 @@ const expiresIn = Number(process.env.JWT_EXPIRES_IN) * 3600;
 const secretKey = process.env.JWT_SECRET as string;
 
 /** Generate a token for the user on successful login */
-export function generateToken(user: IUser | IAdmin) {
-    const jwtPayload = { id: user._id, role: user.role};
+export function signToken(user: IUser | IAdmin | IRider) {
+    const jwtPayload = { id: user._id, role: user.role };
     return jwt.sign(jwtPayload, secretKey, { expiresIn });
 }
 

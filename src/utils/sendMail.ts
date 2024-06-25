@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import { devLog } from './helperFunctions';
 
 export default async function sendMail(to: string, subject: string, text: string) {
     const user = process.env.GMAIL;
@@ -11,7 +12,7 @@ export default async function sendMail(to: string, subject: string, text: string
 
     try {
         const info = await transporter.sendMail(mailOptions);
-        console.log("Email sent: " + info.response);
+        devLog("Email sent: " + info.response);
         return { success: true, message: "Email sent successfully" };
     } catch (error: any) {
         return { success: false, message: error.message };

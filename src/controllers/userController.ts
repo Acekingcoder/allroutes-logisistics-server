@@ -1,12 +1,11 @@
 import { Request, Response } from "express";
 import User from "../models/userModel";
 import bcrypt from "bcryptjs";
-import Wallet from "../models/walletModel";
 import * as joi from "../validation/joi";
-import { attachToken, generateToken } from "../utils/jwt";
+import { attachToken, signToken } from "../utils/jwt";
 import Token from '../models/tokenModel';
 import sendMail, { getPasswordResetHTML } from "../utils/sendMail";
-import { passwordCheck } from "../utils/helperFunctions";
+import { calcBalance, errorHandler, passwordCheck } from "../utils/helperFunctions";
 
 export const createUser = async (req: Request, res: Response) => {
     try {
@@ -17,14 +16,6 @@ export const createUser = async (req: Request, res: Response) => {
         const result = passwordCheck(value.password);
         if (result.error) return res.status(400).json({ message: result.error });
         newUser = await User.create({ ...value, password: await bcrypt.hash(value.password, 10) });
-
-        try {
-            // reason for this try-catching is to ensure that if wallet creation fails, the user is deleted
-            await Wallet.create({ customerId: newUser._id });
-        } catch {
-            await newUser.deleteOne();
-            throw new Error('wallet creation failed 500');
-        }
 
         res.status(201).json({
             status: "success",
@@ -102,7 +93,7 @@ export const loginUser = async (req: Request, res: Response) => {
         const isValid = await bcrypt.compare(value.password, user.password as string);
         if (!isValid) return res.status(401).json({ message: "Invalid credentials!" });
 
-        const token = generateToken(user);
+        const token = signToken(user);
         attachToken(token, res);
 
         return res.json({ token, user });
@@ -182,14 +173,12 @@ export async function deleteUserById(req: Request, res: Response) {
         const { userId } = req.params;
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: "User not found" });
-        const wallet = await Wallet.findOne({ customerId: userId });
-        const userBalance = wallet?.balance;
+        const userBalance = await calcBalance(userId);
         if (userBalance) return res.status(400).json({
             message: "Failed to delete user",
             error: "User account balance is not zero"
-        })
+        });
         await user.deleteOne();
-        if (wallet) await wallet.deleteOne();
         res.json({ message: 'User account deleted successfully' });
 
     } catch (error: any) {
@@ -197,5 +186,16 @@ export async function deleteUserById(req: Request, res: Response) {
     }
 }
 
-// todo --> get user profile controller
-// ...
+export async function getProfile(req: Request, res: Response) {
+    const userId = req.user.id;
+    try {
+        const user = await User.findById(userId).select('-password -__v -updatedAt');
+        if (!user) return res.status(404).json({ message: "User not found" });
+        res.json({
+            ...user.toJSON(),
+            walletBalance: await calcBalance(userId),
+         });
+    } catch (error) {
+        errorHandler(error, res);
+    }
+}

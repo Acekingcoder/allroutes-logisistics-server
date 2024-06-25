@@ -1,29 +1,40 @@
-import mongoose, { Schema, model } from "mongoose";
+import { Schema, model, Types, Document } from "mongoose";
+import { TRX_SERVICE, TRX_TYPE, PAYMENT_STATUS } from "../utils/constants";
+
+export interface ITransaction extends Document {
+    user: Types.ObjectId;
+    amount: number;
+    type: string;
+    service: string;
+    ref: string;
+    reference: string;
+}
 
 const transactionSchema = new Schema<ITransaction>(
     {
-        amount: {
-            type: Number,
-            required: true,
-        },
-        transactionType: {
-            type: String,
-            required: true,
-            enum: ['credit', 'debit'],
-        },
-        status: {
-            type: String,
-            default: "pending",
-            enum: ['pending', 'completed', 'failed']
-        },
         user: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: true,
         },
+        amount: {
+            type: Number,
+            required: true,
+        },
+        type: {
+            type: String,
+            enum: Object.values(TRX_TYPE),
+            required: true,
+        },
+        service: {
+            type: String,
+            enum: Object.values(TRX_SERVICE),
+            required: true,
+        },
         reference: {
             type: String,
-            unique: true
+            unique: true,
+            required: true,
         }
     },
     { timestamps: true }
