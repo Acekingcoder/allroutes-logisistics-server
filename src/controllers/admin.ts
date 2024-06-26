@@ -9,9 +9,10 @@ export async function create(req: Request, res: Response) {
     try {
         const { error, value } = joi.createAdminSchema.validate(req.body);
         if (error) return res.status(400).json({ message: error.message });
-        let admin = await Admin.findOne({ email: value.email });
-        if (admin) return res.status(409).json({ message: "Email has been used" });
-        admin = await Admin.create({ ...value, password: await bcrypt.hash(value.password, 10) });
+        if (await Admin.findOne({ email: value.email })
+        ) return res.status(409).json({ message: "Email has been used" });
+
+        await Admin.create({ ...value, password: await bcrypt.hash(value.password, 10) });
         res.status(201).json({ message: "New admin user created successfully" });
     } catch (error: any) {
         res.status(500).json({ message: "Failed to create admin", error: error.message });
@@ -21,7 +22,7 @@ export async function create(req: Request, res: Response) {
 // LOGIN ADMIN
 export async function login(req: Request, res: Response) {
     try {
-        const { error, value } = joi.userLoginSchema.validate(req.body);
+        const { error, value } = joi.loginSchema.validate(req.body);
         if (error) return res.status(400).json({ message: error.message });
         const admin = await Admin.findOne({ email: value.email });
         if (!admin) return res.status(401).json({ message: "Invalid admin credentials!" });
@@ -32,7 +33,7 @@ export async function login(req: Request, res: Response) {
         const token = signToken(admin);
         attachToken(token, res);
 
-        return res.json({ message: 'Admin login successful', admin: admin.email });
+        return res.json({ message: 'Login successful', admin: admin.email });
     } catch (error: any) {
         console.error(error);
         res.status(500).json({ message: "Failed to login admin" });

@@ -1,5 +1,5 @@
 import { Schema, model, Types, Document } from "mongoose";
-import { TRX_SERVICE, TRX_TYPE, PAYMENT_STATUS } from "../utils/constants";
+import { TRX_SERVICE, TRX_TYPE } from "../utils/constants";
 
 export interface ITransaction extends Document {
     user: Types.ObjectId;

@@ -3,10 +3,8 @@ import { ORDER_STATUS } from "../utils/constants";
 
 export interface IOrder extends Document {
     description?: string;
-    deliveryAddress: string;
-    pickupAddress: string;
-    pickupDate?: Date;
-    deliveryDate?: Date;
+    pickupLocation: string;
+    destination: string;
     deliveryCode: string;
     progressTracker: number;
     status: string;
@@ -22,19 +20,13 @@ const orderSchema = new Schema<IOrder>(
             type: String,
         },
 
-        deliveryAddress: {
+        pickupLocation: {
             type: String,
             required: true
         },
-        pickupAddress: {
+        destination: {
             type: String,
             required: true
-        },
-        pickupDate: {
-            type: Date,
-        },
-        deliveryDate: {
-            type: Date,
         },
         status: {
             type: String,
@@ -43,7 +35,8 @@ const orderSchema = new Schema<IOrder>(
         },
         progressTracker: {
             type: Number,
-            default: 0
+            default: 0,
+            enum: [0, 1, 2, 3],
         },
         deliveryCode: {
             type: String,
@@ -64,6 +57,7 @@ const orderSchema = new Schema<IOrder>(
         dispatchNo: {
             type: String,
             required: true,
+            unique: true,
         }
     },
     {

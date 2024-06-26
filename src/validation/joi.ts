@@ -7,21 +7,12 @@ export const options = {
 
 export const createOrderSchema = joi.object().keys({
     description: joi.string().max(1000),
-    deliveryAddress: joi.string().required(),
-    pickupAddress: joi.string().required(),
+    pickupLocation: joi.string().required(),
+    destination: joi.string().required(),
     amount: joi.number().min(0).required()
 });
 
-export const createUserSchema = joi.object().keys({
-    firstName: joi.string().required(),
-    lastName: joi.string().required(),
-    phoneNumber: joi.string().required(),
-    email: joi.string().email().required(),
-    password: joi.string().min(6).required(),
-    confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
-});
-
-export const userLoginSchema = joi.object().keys({
+export const loginSchema = joi.object().keys({
     email: joi.string().email().required().trim(),
     password: joi.string().required(),
 });
@@ -36,11 +27,33 @@ export const resetPasswordSchema = joi.object().keys({
     otp: joi.string().required()
 });
 
+export const createUserSchema = joi.object().keys({
+    firstName: joi.string().required(),
+    lastName: joi.string().required(),
+    email: joi.string().email().required(),
+    phoneNumber: joi.string().required(),
+    password: joi.string().min(6).required(),
+    confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
+});
+
 export const createAdminSchema = joi.object().keys({
     firstName: joi.string(),
     lastName: joi.string(),
     email: joi.string().email().required(),
-    password: joi.string().min(6).required()
+    phoneNumber: joi.string(),
+    password: joi.string().min(6).required(),
+    confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
+});
+
+export const createRiderSchema = joi.object().keys({
+    firstName: joi.string().required(),
+    lastName: joi.string().required(),
+    email: joi.string().email().required(),
+    phoneNumber: joi.string().required(),
+    password: joi.string().min(6).required(),
+    confirm: joi.string().valid(joi.ref('password')).required().messages({ 'any.only': 'Passwords do not match' }),
+    address: joi.string(),
+    // todo --> more fields to be added...
 });
 
 // add more validators here
