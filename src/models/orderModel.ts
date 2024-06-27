@@ -1,73 +1,47 @@
-import mongoose, { Schema } from "mongoose";
-import { orderStatus } from "../utils/constants";
+import { Schema, model, Document, Types } from "mongoose";
+import { ORDER_STATUS } from "../utils/constants";
+import { IUser } from "./userModel";
+import { IRider } from "./ridersModel";
+
+export interface IOrder extends Document {
+    description?: string;
+    pickupLocation: string;
+    destination: string;
+    deliveryCode: string;
+    progressTracker: number;
+    status: string;
+    customer: IUser | Types.ObjectId | string;
+    rider?: Types.ObjectId | string | IRider;
+    amount: number;
+    dispatchNo: string;
+}
 
 const orderSchema = new Schema<IOrder>(
     {
         description: {
             type: String,
-            required: true,
         },
-        weight: {
-            type: Number,
-        },
-        specialInstruction: {
+
+        pickupLocation: {
             type: String,
-            required: true,
+            required: true
         },
-        deliveryAddress: {
-            street: {
-                type: String,
-                required: true,
-            },
-            city: {
-                type: String,
-                required: true,
-            },
-            state: {
-                type: String,
-                required: true,
-            },
-            coordinates: {
-                lat: {
-                    type: Number,
-                },
-                lng: {
-                    type: Number,
-                },
-            },
-        },
-        pickupAddress: {
-            street: {
-                type: String,
-                required: true,
-            },
-            city: {
-                type: String,
-                required: true,
-            },
-            state: {
-                type: String,
-                required: true,
-            },
-            coordinates: {
-                lat: {
-                    type: Number,
-                },
-                lng: {
-                    type: Number,
-                },
-            },
-        },
-        pickupDate: {
-            type: Date,
-        },
-        deliveryDate: {
-            type: Date,
+        destination: {
+            type: String,
+            required: true
         },
         status: {
             type: String,
-            enum: Object.values(orderStatus),
-            default: orderStatus.pending,
+            enum: Object.values(ORDER_STATUS),
+            default: ORDER_STATUS.onGoing,
+        },
+        progressTracker: {
+            type: Number,
+            default: 0,
+            enum: [0, 1, 2, 3],
+        },
+        deliveryCode: {
+            type: String,
         },
         customer: {
             type: Schema.Types.ObjectId,
@@ -78,21 +52,20 @@ const orderSchema = new Schema<IOrder>(
             type: Schema.Types.ObjectId,
             ref: "Rider",
         },
-        recipient: {
-            name: {
-                type: String,
-                required: true,
-            },
-            phone: {
-                type: String,
-                required: true,
-            },
+        amount: {
+            type: Number,
+            required: true
         },
+        dispatchNo: {
+            type: String,
+            required: true,
+            unique: true,
+        }
     },
     {
         timestamps: true,
     }
 );
 
-const Order = mongoose.model<IOrder>("Order", orderSchema);
+const Order = model<IOrder>("Order", orderSchema);
 export default Order;

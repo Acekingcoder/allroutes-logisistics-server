@@ -8,8 +8,8 @@ import usersRouter from './routes/users';
 import authRouter from './routes/auth';
 import orderRouter from './routes/order';
 import riderRouter from './routes/rider';
-import transactionRouter from './routes/transaction';
 import connectDB from './config/database';
+import adminRouter from './routes/admin';
 
 dotenv.config();
 connectDB();
@@ -26,7 +26,7 @@ app.use('/auth', authRouter);
 app.use('/users', usersRouter);
 app.use('/order', orderRouter);
 app.use('/rider', riderRouter);
-app.use('/transaction', transactionRouter);
+app.use('/admin', adminRouter);
 
 // Handle 404 Not Found
 app.use("/*", (req, res) => {
