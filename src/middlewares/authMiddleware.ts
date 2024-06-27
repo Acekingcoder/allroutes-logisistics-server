@@ -20,7 +20,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 export function authorizeAdmin(req: Request, res: Response, next: NextFunction) {
     const { role } = req.user;
     if (role !== "admin") {
-        return res.status(403).json({ error: "Unauthorized", message: "You must be an admin to access this resource" });
+        return res.status(403).json({ error: "Unauthorized", message: "Only admins can access this resource" });
     }
     next();
 }
@@ -28,7 +28,7 @@ export function authorizeAdmin(req: Request, res: Response, next: NextFunction) 
 export function authorizeRider(req: Request, res: Response, next: NextFunction) {
     const { role } = req.user;
     if (role !== "rider") {
-        return res.status(403).json({ error: "Unauthorized", message: "You must be an rider to access this resource" });
+        return res.status(403).json({ error: "Unauthorized", message: "Please login as a rider or create a rider account" });
     }
     next();
 }
@@ -36,7 +36,7 @@ export function authorizeRider(req: Request, res: Response, next: NextFunction) 
 export function authorizeCustomer(req: Request, res: Response, next: NextFunction) {
     const { role } = req.user;
     if (role !== "customer") {
-        return res.status(403).json({ error: "Unauthorized", message: "You must be an customer to access this resource" });
+        return res.status(403).json({ error: "Unauthorized", message: "Please login as a customer or create a customer account" });
     }
     next();
 }

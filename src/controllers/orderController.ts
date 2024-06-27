@@ -3,11 +3,11 @@ import Order from "../models/orderModel";
 import { Request, Response } from "express";
 import * as joi from "../validation/joi";
 import { ORDER_STATUS, TRX_SERVICE, TRX_TYPE } from "../utils/constants";
-import User from "../models/userModel";
+import User, { IUser } from "../models/userModel";
 import Transaction from '../models/transactionModel';
 import { verifyTransaction } from "../utils/paystack";
-import bcrypt from 'bcryptjs';
-import sendMail, { generateCreatedOrderMail } from "../utils/sendMail";
+import sendMail, { generateCreatedOrderMail, generateOrderDeliveryMail } from "../utils/sendMail";
+import { IRider } from "../models/ridersModel";
 
 export async function createOrder(req: Request, res: Response) {
     try {
@@ -55,17 +55,41 @@ export async function createOrder(req: Request, res: Response) {
 
 export async function getOrders(req: Request, res: Response) {
     const { id, role } = req.user;
+    const progressTracker = req.query.progress;
+
     try {
         let orders;
+        const populateFields = 'firstName lastName email phoneNumber';
         if (role === "rider") {
-            // get all orders assigned to the rider or yet to be assigned (with no rider field)
-            orders = await Order.find({ $or: [{ rider: id }, { rider: { $exists: false } }] }).sort({ createdAt: -1 }).select("")
+            // get all orders assigned to the rider or yet to be assigned (progressTracker = 0)
+            if (Number(progressTracker) > 0) {
+                orders = await Order.find({ rider: id, progressTracker })
+                    .populate({ path: 'customer', select: populateFields })
+                    .sort({ createdAt: -1 })
+                    .select('-__v -rider');
+            } else if (progressTracker === '0') {
+                orders = await Order.find({ progressTracker: 0 })
+                    .populate({ path: 'customer', select: populateFields })
+                    .sort({ createdAt: -1 })
+                    .select('-__v -rider');
+            } else {
+                orders = await Order.find({ $or: [{ rider: id }, { progressTracker: 0 }] })
+                    .populate({ path: 'customer', select: populateFields })
+                    .sort({ createdAt: -1 })
+                    .select('-__v -rider');
+            }
         } else if (role === "customer") {
-            orders = await Order.find({ customer: id }).sort({ createdAt: -1 });
+            orders = await Order.find({ customer: id })
+                .populate({ path: 'rider', select: populateFields })
+                .sort({ createdAt: -1 }).select('-__v')
+                .select('-__v -customer');
         } else {
-            orders = await Order.find().sort({ createdAt: -1 });
+            orders = await Order.find().sort({ createdAt: -1 })
+                .populate({ path: 'customer', select: populateFields })
+                .populate({ path: 'rider', select: populateFields })
+                .select('-__v');
         }
-        return res.json({ orders });
+        return res.json({ result: orders.length, orders });
     } catch (error) {
         errorHandler(error, res);
     }
@@ -76,12 +100,20 @@ export async function getOrderById(req: Request, res: Response) {
     const { role } = req.user;
     try {
         let order;
+        const populateFields = 'firstName lastName email phoneNumber';
         if (role === "rider") {
-            order = await Order.findOne({ _id: orderId, rider: req.user.id }).populate('customer');
+            order = await Order.findOne({ _id: orderId, rider: req.user.id })
+                .populate({ path: 'customer', select: populateFields })
+                .select('-__v');
         } else if (role === "customer") {
-            order = await Order.findOne({ _id: orderId, customer: req.user.id }).populate('rider');
+            order = await Order.findOne({ _id: orderId, customer: req.user.id })
+                .populate({ path: 'rider', select: populateFields })
+                .select('-__v');
         } else {
-            order = await Order.findById(orderId).populate("customer").populate("rider");
+            order = await Order.findById(orderId)
+                .populate({ path: 'customer', select: populateFields })
+                .populate({ path: 'rider', select: populateFields })
+                .select('-__v');
         }
         if (!order) return res.status(404).json({ error: "Order not found" });
         return res.json({ order });
@@ -94,15 +126,17 @@ export async function acceptPickupRequest(req: Request, res: Response) {
     const { orderId } = req.params;
 
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findOne({ _id: orderId, progressTracker: 0 }).select('-rider -__v -createdAt -updatedAt');
         if (!order)
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ error: "Order not available for acceptance" });
 
         order.rider = req.user.id;
         order.progressTracker = 1;
         await order.save();
 
-        return res.json({ message: "Order assigned to rider", order });
+        //todo --> send mail to customer to notify them of the rider assigned to their order
+
+        return res.json({ message: "You have accept to deliver this package", order });
     } catch (error) {
         errorHandler(error, res);
     }
@@ -112,15 +146,14 @@ export async function pickUpDelivery(req: Request, res: Response) {
     const { orderId } = req.params;
 
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findOne({ _id: orderId, progressTracker: 1 }).select('-rider -__v -createdAt -updatedAt');
         if (!order)
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ error: "Order not available for pick up" });
 
-        order.status = "picked-up";
         order.progressTracker = 2;
         await order.save();
 
-        return res.json({ message: "Order has been pickup by rider", order });
+        return res.json({ message: "You have picked up this package for delivery", order });
     } catch (error) {
         errorHandler(error, res);
     }
@@ -130,12 +163,15 @@ export async function deliverPackage(req: Request, res: Response) {
     const { orderId } = req.params;
     const deliveryCode = req.body.deliveryCode;
     if (!deliveryCode)
-        return res.status(400).json({ error: "Delivery code is required" });
+        return res.status(400).json({ error: "'deliveryCode' is required" });
 
     try {
-        const order = await Order.findById(orderId);
+        const order = await Order.findOne({_id: orderId, progressTracker: 2})
+            .select('-rider -__v -createdAt -updatedAt')
+            .populate({path: 'customer', select: 'email firstName lastName'})
+            .populate({path: 'rider', select: 'email firstName lastName'});
         if (!order)
-            return res.status(404).json({ error: "Order not found" });
+            return res.status(404).json({ error: "Order not available for delivery" });
 
         if (order.deliveryCode !== deliveryCode)
             return res.status(400).json({ error: "Delivery code is incorrect" });
@@ -145,10 +181,13 @@ export async function deliverPackage(req: Request, res: Response) {
         order.deliveryCode = '';
         await order.save();
 
-        // todo --> send mail to customer on successful delivery
-        // todo --> implement notification logic here
+        const customer = order.customer as IUser;
+        const rider = order.rider as IRider;
 
-        return res.json({ message: "Order has been delivered", order });
+        sendMail(customer.email, 'Your Package Has Been Delivered', generateOrderDeliveryMail(order, customer, rider));
+        // todo --> implement dashboard notification logic here
+
+        return res.json({ message: "You have successfully delivered the package", order });
     } catch (error) {
         errorHandler(error, res);
     }

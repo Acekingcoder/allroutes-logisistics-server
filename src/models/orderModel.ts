@@ -1,5 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 import { ORDER_STATUS } from "../utils/constants";
+import { IUser } from "./userModel";
+import { IRider } from "./ridersModel";
 
 export interface IOrder extends Document {
     description?: string;
@@ -8,8 +10,8 @@ export interface IOrder extends Document {
     deliveryCode: string;
     progressTracker: number;
     status: string;
-    customer: Types.ObjectId;
-    rider?: Types.ObjectId | string;
+    customer: IUser | Types.ObjectId | string;
+    rider?: Types.ObjectId | string | IRider;
     amount: number;
     dispatchNo: string;
 }

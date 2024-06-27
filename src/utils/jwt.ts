@@ -13,9 +13,9 @@ const expiresIn = Number(process.env.JWT_EXPIRES_IN) * 3600;
 
 const secretKey = process.env.JWT_SECRET as string;
 
-/** Generate a token for the user on successful login */
+/** Generate and sign a token for the user on successful login */
 export function signToken(user: IUser | IAdmin | IRider) {
-    const jwtPayload = { id: user._id, role: user.role };
+    const jwtPayload = { id: user._id, role: user.role, email: user.email };
     return jwt.sign(jwtPayload, secretKey, { expiresIn });
 }
 

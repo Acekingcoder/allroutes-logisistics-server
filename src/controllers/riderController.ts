@@ -45,7 +45,7 @@ export async function createRiderProfile(req: Request, res: Response) {
             return res.status(400).json({ message: result.error });
         const newRider = await Rider.create({ ...value, password: await bcrypt.hash(value.password, 10) });
 
-        res.status(201).json({ status: "success", newRider });
+        res.status(201).json({message: 'New rider created successfully', riderId: newRider.id});
     } catch (error) {
         errorHandler(error, res);
     }

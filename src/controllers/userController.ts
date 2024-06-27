@@ -116,11 +116,11 @@ export const loginUser = async (req: Request, res: Response, next: NextFunction)
 export async function sendPasswordResetOtp(req: Request, res: Response) {
     try {
         const { error, value } = joi.forgotPasswordSchema.validate(req.body);
-        if (error) return res.status(400).json({ message: error.message });
+        if (error) return res.status(400).json({ error: error.message });
 
         const user = await User.findOne({ email: value.email });
 
-        if (!user) return res.status(404).json({ message: 'User with given email does not exist' });
+        if (!user) return res.status(404).json({ error: 'User with given email does not exist' });
 
         let token = await Token.findOne({ user: user._id, type: 'password' });
         if (token) await token.deleteOne();
@@ -140,29 +140,28 @@ export async function sendPasswordResetOtp(req: Request, res: Response) {
         });
 
     } catch (error: any) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal Server Error', error: error.message });
+        errorHandler(error, res);
     }
 }
 
 export async function resetPassword(req: Request, res: Response) {
     try {
         const { email } = req.query;
-        if (!email) return res.status(400).json({ message: 'Email is required in the request query' });
+        if (!email) return res.status(400).json({ error: 'Email is required in the request query' });
         const { error, value } = joi.resetPasswordSchema.validate(req.body);
-        if (error) return res.status(400).json({ message: error.message });
+        if (error) return res.status(400).json({ error: error.message });
 
         const { newPassword, otp } = value;
         const result = passwordCheck(newPassword);
-        if (result.error) return res.status(400).json({ message: result.error });
+        if (result.error) return res.status(400).json({ error: result.error });
         const user = await User.findOne({ email });
-        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (!user) return res.status(404).json({ error: 'User not found' });
 
         const now = new Date();
         const token = await Token.findOne({ otp, type: 'password', user: user._id });
-        if (!token) return res.status(400).json({ message: 'Invalid token' });
+        if (!token) return res.status(400).json({ error: 'Invalid token' });
         if (token.expires < now.getTime()) {
-            return res.status(400).json({ message: 'Expired token. Please make a new forgot password request.' });
+            return res.status(400).json({ error: 'Expired token. Please make a new forgot password request.' });
         }
 
         user.password = await bcrypt.hash(newPassword, 10);
@@ -174,7 +173,7 @@ export async function resetPassword(req: Request, res: Response) {
         });
 
     } catch (error: any) {
-        return res.status(500).json({ message: "Internal Server Error", error: error.message });
+        errorHandler(error, res);
     }
 }
 
@@ -209,4 +208,18 @@ export async function getProfile(req: Request, res: Response) {
     } catch (error) {
         errorHandler(error, res);
     }
+}
+
+/**Get a minified response of the currently logged in user */
+export function getMe(req:Request, res:Response) {
+    const {id, email, role} = req.user;
+    res.json({id, email, role});
+}
+
+/**Logout current user */
+export function logout(req: Request, res: Response) {
+    res.clearCookie('token');
+    res.json({
+        message: 'Logged out successfully',
+    });
 }
