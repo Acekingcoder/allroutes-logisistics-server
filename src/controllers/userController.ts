@@ -198,7 +198,8 @@ export async function deleteUserById(req: Request, res: Response) {
 }
 
 export async function getProfile(req: Request, res: Response) {
-    const userId = req.user.id;
+    const {id: userId, role} = req.user;
+
     try {
         const user = await User.findById(userId).select('-password -__v -updatedAt');
         if (!user) return res.status(404).json({ message: "User not found" });

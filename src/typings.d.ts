@@ -9,5 +9,3 @@ interface IUserPayload {
     role: string;
     email: string;
 }
-
-
