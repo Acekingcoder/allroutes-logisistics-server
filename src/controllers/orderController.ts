@@ -220,6 +220,7 @@ export async function fundWallet(req: Request, res: Response) {
             return res.status(400).json({ message: "Transaction already processed" });
 
         const response = await verifyTransaction(reference);
+        console.log(response);
         if (!response.status) {
             res.status(422);
             return res.json({
@@ -236,6 +237,7 @@ export async function fundWallet(req: Request, res: Response) {
             transactionType: TRX_TYPE.credit,
             service: TRX_SERVICE.walletFunding,
             user: userId,
+            type: TRX_TYPE.credit,
             reference
         });
 

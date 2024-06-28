@@ -11,6 +11,7 @@ export async function verifyTransaction(ref: string) {
         const response = await axios.get(url, authorizationHeaders);
         return response.data;
     } catch (error: any) {
+        console.log(error);
         return { status: false }
     }
 }
