@@ -69,17 +69,23 @@ export async function getOrders(req: Request, res: Response) {
                 orders = await Order.find({ rider: id, progressTracker })
                     .populate({ path: 'customer', select: populateFields })
                     .sort({ createdAt: -1 })
-                    .select('-__v -rider');
+                    .select('-__v -rider -deliveryCode');
             } else if (progressTracker === '0') {
                 orders = await Order.find({ progressTracker: 0 })
                     .populate({ path: 'customer', select: populateFields })
                     .sort({ createdAt: -1 })
-                    .select('-__v -rider');
+                    .select('-__v -rider -deliveryCode');
             } else {
-                orders = await Order.find({ $or: [{ rider: id }, { progressTracker: 0 }] })
+                orders = await Order.find({
+                    $or: [
+                        { progressTracker: 0 },
+                        { progressTracker: 1, rider: id },
+                        { progressTracker: 2, rider: id },
+                    ]
+                })
                     .populate({ path: 'customer', select: populateFields })
                     .sort({ createdAt: -1 })
-                    .select('-__v -rider');
+                    .select('-__v -rider -deliveryCode');
             }
         } else if (role === "customer") {
             orders = await Order.find({ customer: id })
@@ -134,7 +140,7 @@ export async function acceptPickupRequest(req: Request, res: Response) {
             return res.status(404).json({ error: "Order not available for acceptance" });
 
         if (order.progressTracker !== 0) {
-            return res.status(400).json({error: "Order has already been assigned"});
+            return res.status(400).json({ error: "Order has already been assigned" });
         }
 
         order.rider = req.user.id;
@@ -173,10 +179,10 @@ export async function deliverPackage(req: Request, res: Response) {
         return res.status(400).json({ error: "'deliveryCode' is required" });
 
     try {
-        const order = await Order.findOne({_id: orderId, progressTracker: 2})
+        const order = await Order.findOne({ _id: orderId, progressTracker: 2 })
             .select('-rider -__v -createdAt -updatedAt')
-            .populate({path: 'customer', select: 'email firstName lastName'})
-            .populate({path: 'rider', select: 'email firstName lastName'});
+            .populate({ path: 'customer', select: 'email firstName lastName' })
+            .populate({ path: 'rider', select: 'email firstName lastName' });
         if (!order)
             return res.status(404).json({ error: "Order not available for delivery" });
 

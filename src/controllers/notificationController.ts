@@ -4,21 +4,22 @@ import Notification from "../models/notificationModel";
 import { errorHandler } from "../utils/helperFunctions";
 
 
-export async function getNotification(req: Request, res: Response) {
+export async function getMyNotifications(req: Request, res: Response) {
     try {
-        let { userId, filter } = req.params;
+        const userId = req.user.id;
+        let { filter } = req.query;
         filter = (filter === 'read' || filter === 'unread') ? filter : 'all';
         //checking if the user exists
         const user = await User.findById(userId);
-        if (!user) return res.status(404).json({ message: "User not found" });
+        if (!user) return res.status(404).json({ error: "User not found" });
         //get all the notifications pertaining to the user
         let searchParams = { user: userId, read: filter === 'read' }
-        if(filter != 'all') {
+        if (filter != 'all') {
             searchParams = { user: userId } as any
         }
         const notifications = await Notification
-        .find(searchParams)
-        .sort({ createdAt: -1 })
+            .find(searchParams)
+            .sort({ createdAt: -1 })
         return res.json({ result: notifications.length, notifications });
 
     } catch (error) {
@@ -27,14 +28,14 @@ export async function getNotification(req: Request, res: Response) {
     }
 }
 
-export async function getNotificationById(req: Request, res: Response) {
+export async function getMyNotificationById(req: Request, res: Response) {
     const { notificationId } = req.params;
     try {
         const notification = await Notification.findOne({ _id: notificationId })
-        .select('-__v');
+            .select('-__v');
         if (!notification) return res.status(404).json({ error: "Notification not found" });
-        return res.json({ notification });
-    } catch (error: any) {
+        return res.json(notification);
+    } catch (error) {
         errorHandler(error, res);
     }
 }
@@ -43,7 +44,7 @@ export async function readNotification(req: Request, res: Response) {
     const { notificationId } = req.params;
     try {
         const notification = await Notification.findOne({ _id: notificationId })
-        .select('-__v');
+            .select('-__v');
         if (!notification) return res.status(404).json({ error: "Notification not found" });
         notification.read = true
         const newNotification = await notification.save();

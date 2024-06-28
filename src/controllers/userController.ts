@@ -201,12 +201,22 @@ export async function getProfile(req: Request, res: Response) {
     const {id: userId, role} = req.user;
 
     try {
-        const user = await User.findById(userId).select('-password -__v -updatedAt');
-        if (!user) return res.status(404).json({ message: "User not found" });
-        res.json({
-            ...user.toJSON(),
-            walletBalance: await calcBalance(userId),
-        });
+        if (role === 'customer') {
+            const user = await User.findById(userId).select('-password -__v -updatedAt');
+            if (!user) return res.status(404).json({ message: "User not found" });
+            res.json({
+                ...user.toJSON(),
+                walletBalance: await calcBalance(userId),
+            });
+        } else if (role === 'rider') {
+            const rider = await Rider.findById(userId).select('-password -__v -updatedAt');
+            if (!rider) return res.status(404).json({ message: "Rider not found" });
+            res.json(rider);
+        } else {
+            const admin = await Admin.findById(userId).select('-password -__v -updatedAt');
+            if (!admin) return res.status(404).json({ message: "Admin not found" });
+            res.json(admin);
+        }
     } catch (error) {
         errorHandler(error, res);
     }

@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { getNotification, getNotificationById, readNotification } from "../controllers/notificationController";
+import { getMyNotifications, getMyNotificationById, readNotification } from "../controllers/notificationController";
 import { authenticate } from "../middlewares/authMiddleware";
 
 const router = Router()
 
-router.get("/:userId", getNotification)
-router.get("/:notificationId", getNotificationById)
-router.put("/:notificationId/read", authenticate, readNotification)
+router.get("/", authenticate, getMyNotifications);
+router.get("/:notificationId", authenticate, getMyNotificationById);
+router.put("/:notificationId/read", authenticate, readNotification);
 
 
 export default router
