@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 export default async function connectDB() {
     let databaseUrl = process.env.DEV_MONGO_URI as string;
-    if (process.env.NODE_ENV === "production") {
+    if (process.env.NODE_ENV === "prod") {
         databaseUrl = process.env.PROD_MONGO_URI as string;
     }
     try {
