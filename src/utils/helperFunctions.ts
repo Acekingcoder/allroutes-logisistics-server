@@ -57,7 +57,7 @@ export function errorHandler(error: any, res: Response) {
 
 /** Log messages only in development mode */
 export function devLog(message: unknown) {
-    if (process.env.NODE_ENV !== "production") {
+    if (process.env.NODE_ENV !== "prod") {
         console.log(message);
     }
 }
