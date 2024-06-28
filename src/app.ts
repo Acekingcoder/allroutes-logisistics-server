@@ -10,6 +10,7 @@ import orderRouter from './routes/order';
 import riderRouter from './routes/rider';
 import connectDB from './config/database';
 import adminRouter from './routes/admin';
+import notificationRouter from './routes/notification';
 
 dotenv.config();
 connectDB();
@@ -27,6 +28,7 @@ app.use('/users', usersRouter);
 app.use('/order', orderRouter);
 app.use('/rider', riderRouter);
 app.use('/admin', adminRouter);
+app.use('/notification', notificationRouter);
 
 // Handle 404 Not Found
 app.use("/*", (req, res) => {
