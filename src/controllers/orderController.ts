@@ -8,6 +8,7 @@ import Transaction from '../models/transactionModel';
 import { verifyTransaction } from "../utils/paystack";
 import sendMail, { generateCreatedOrderMail, generateOrderDeliveryMail } from "../utils/sendMail";
 import { IRider } from "../models/ridersModel";
+import { create } from "./notificationController";
 
 export async function createOrder(req: Request, res: Response) {
     try {
@@ -46,6 +47,8 @@ export async function createOrder(req: Request, res: Response) {
 
         sendMail(user.email, 'Order Created', generateCreatedOrderMail(order, user));
         // todo -->> send mail to all riders to notify them of a new order
+
+        await create('You have created a new order with dispatchNo: ' + dispatchNo, user.id)
 
         return res.status(201).json({ message: "Order created successfully", order });
     } catch (error: any) {
@@ -129,6 +132,10 @@ export async function acceptPickupRequest(req: Request, res: Response) {
         const order = await Order.findOne({ _id: orderId, progressTracker: 0 }).select('-rider -__v -createdAt -updatedAt');
         if (!order)
             return res.status(404).json({ error: "Order not available for acceptance" });
+
+        if (order.progressTracker !== 0) {
+            return res.status(400).json({error: "Order has already been assigned"});
+        }
 
         order.rider = req.user.id;
         order.progressTracker = 1;
