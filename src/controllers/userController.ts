@@ -188,6 +188,7 @@ export async function deleteUserById(req: Request, res: Response) {
             message: "Failed to delete user",
             error: "User account balance is not zero"
         });
+
         await user.deleteOne();
         res.json({ message: 'User account deleted successfully' });
 
