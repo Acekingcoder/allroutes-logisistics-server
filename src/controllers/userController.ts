@@ -5,7 +5,7 @@ import * as joi from "../validation/joi";
 import { attachToken, signToken } from "../utils/jwt";
 import Token from '../models/tokenModel';
 import sendMail, { getPasswordResetHTML } from "../utils/sendMail";
-import { calcBalance, errorHandler, passwordCheck } from "../utils/helperFunctions";
+import { calcBalance, errorHandler } from "../utils/helperFunctions";
 import Rider from '../models/ridersModel';
 import Admin from '../models/admin';
 
@@ -17,9 +17,6 @@ export const createUser = async (req: Request, res: Response) => {
         if (await User.findOne({ email: value.email }) || await Rider.findOne({ email: value.email }))
             return res.status(409).json({ error: "Email has been used" });
 
-        const result = passwordCheck(value.password);
-        if (result.error)
-            return res.status(400).json({ message: result.error });
         const user = await User.create({ ...value, password: await bcrypt.hash(value.password, 10) });
 
         res.status(201).json({message: 'New customer created successfully', userId: user.id});
@@ -152,8 +149,6 @@ export async function resetPassword(req: Request, res: Response) {
         if (error) return res.status(400).json({ error: error.message });
 
         const { newPassword, otp } = value;
-        const result = passwordCheck(newPassword);
-        if (result.error) return res.status(400).json({ error: result.error });
         const user = await User.findOne({ email });
         if (!user) return res.status(404).json({ error: 'User not found' });
 
