@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
 import Rider from "../models/ridersModel";
-import { errorHandler, passwordCheck } from "../utils/helperFunctions";
+import { errorHandler } from "../utils/helperFunctions";
 import bcrypt from "bcryptjs";
 import * as joi from "../validation/joi";
 import User from '../models/userModel';
@@ -40,9 +40,6 @@ export async function createRiderProfile(req: Request, res: Response) {
         if (await Rider.findOne({ phoneNumber: value.phoneNumber }))
             return res.status(409).json({ message: "Phone number has been used" });
 
-        const result = passwordCheck(value.password);
-        if (result.error)
-            return res.status(400).json({ message: result.error });
         const newRider = await Rider.create({ ...value, password: await bcrypt.hash(value.password, 10) });
 
         res.status(201).json({message: 'New rider created successfully', riderId: newRider.id});

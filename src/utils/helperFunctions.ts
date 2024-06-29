@@ -5,9 +5,6 @@ import { Response } from "express";
 import Transaction from "../models/transactionModel";
 import { TRX_TYPE } from "./constants";
 import Order from '../models/orderModel';
-import User from '../models/userModel';
-import Rider from '../models/ridersModel';
-import Admin from '../models/admin';
 
 /** User password validator */
 export function passwordCheck(password: string) {
